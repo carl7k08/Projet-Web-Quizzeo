@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
-        if (user['is_active'] == 0) {
+        if ($user['is_active'] == 0) {
             $message = 'Votre compte a été désactivé par un de nos administrateurs.';
         } else {
             $_SESSION['user_id'] = $user['id'];
