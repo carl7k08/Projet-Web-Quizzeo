@@ -77,3 +77,44 @@ input, select {
     border-radius: 5px;
     box-sizing: border-box;
 }
+__
+.quiz-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 20px;
+
+}
+
+.form-group label{
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group input[type="text"], 
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    min-height: 100px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.btn-submit {
+    margin-top: 15px;
+    width: 100%;
+}
