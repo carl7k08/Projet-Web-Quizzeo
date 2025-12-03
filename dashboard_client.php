@@ -1,10 +1,14 @@
 <?php
-require_once 'config/database.php';
+require 'config/database.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] != 'ecole' && $_SESSION['role'] != 'entreprise')) {
     header('Location: login.php');
     exit();
 }
+
+$stmt = $pdo->prepare('SELECT * FROM quizzes WHERE user_id = ? ORDER BY created_at DESC');
+$stmt->execute([$_SESSION['user_id']]);
+$quizzes = $stmt->fetchAll();
 
 $quizzes = [];
 ?>
@@ -34,9 +38,49 @@ $quizzes = [];
         <hr>
 
         <?php if(empty($quizzes)): ?>
-            <p>Vous n'avez pas encore crée de quiz.</p>
+            <p>Vous n'avez pas encore créé de quiz.</p>
         <?php else: ?>
-            <p>Liste des quiz...</p>
+            <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                <thead>
+                    <tr style="background:#ddd; text-align:left;">
+                        <th style="padding:10px;">Titre</th>
+                        <th style="padding:10px;">Statut</th>
+                        <th style="padding:10px;">Lien (à partager)</th>
+                        <th style="padding:10px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach($quizzes as $q): ?>
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px;">
+                            <strong><?= htmlspecialchars($q['titre']) ?></strong><br>
+                            <small><?= count($pdo->query("SELECT id FROM questions WHERE quiz_id=".$q['id'])->fetchAll()) ?> questions</small>
+                        </td>
+                        <td style="padding:10px;">
+                            <?php 
+                                if($q['status'] == 'en_cours') echo '<span style="color:orange;">Brouillon</span>';
+                                if($q['status'] == 'lance') echo '<span style="color:green; font-weight:bold;">Lancé</span>';
+                                if($q['status'] == 'termine') echo '<span style="color:red;">Terminé</span>';
+                            ?>
+                        </td>
+                        <td style="padding:10px;">
+                            <?php if($q['status'] == 'lance'): ?>
+                                <a href="view_quiz.php?id=<?= $q['id'] ?>" target="_blank">Lien du quiz</a>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
+                        <td style="padding:10px;">
+                            <?php if($q['status'] == 'en_cours'): ?>
+                                <a href="edit_quiz.php?id=<?= $q['id'] ?>" class="btn" style="padding:5px 10px; font-size:12px;">Modifier</a>
+                            <?php else: ?>
+                                <a href="quiz_results.php?id=<?= $q['id'] ?>" class="btn" style="background-color:var(--color-accent); color:#333; padding:5px 10px; font-size:12px;">Voir Résultats</a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         <?php endif; ?>
     </div>
 </body>

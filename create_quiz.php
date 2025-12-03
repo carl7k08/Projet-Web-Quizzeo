@@ -1,20 +1,21 @@
 <?php 
-require 'config/db.php';
+require 'config/database.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] != 'ecole' && $_SESSION['role'] != 'entreprise')) {
     header("Location: login.php");
     exit();
 }
-if ($_SERVER["REQUEST_METHOD"] =="POST") {
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titre = htmlspecialchars($_POST['titre']);
     $description = htmlspecialchars($_POST['description']);
     $user_id = $_SESSION['user_id'];
 
-    $stmt = $pdo ->prepare("INSERT INTO quizzes (user_id, description, status) VALUES (?, ?, ?, 'en_cours')");
+    $stmt = $pdo->prepare("INSERT INTO quizzes (user_id, titre, description, status) VALUES (?, ?, ?, 'en_cours')");
     $stmt->execute([$user_id, $titre, $description]);
-    $quiz_id = $pdo -> lastInsertId();
+    $quiz_id = $pdo->lastInsertId();
 
-    header("Location: edit_quiz.php?id=" .$quiz_id);
+    header("Location: edit_quiz.php?id=" . $quiz_id);
     exit(); 
 
 }
@@ -26,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] =="POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nouveau Quiz - Quizzeo</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <header>
@@ -40,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] =="POST") {
                 <input type="text" name="titre" placeholder="Ex: Examen de Mathémtiques" required>
 
                 <label> Description: </label>
-                <textearea name="description" rows="4" style="width:100%; border:1px solid #ddd; padding:10px;" placeholder="Ex: Chapitre 1 à 3"> "</textarea>
+                <textarea name="description" rows="4" style="width:100%; border:1px solid #ddd; padding:10px;" placeholder="Ex: Chapitre 1 à 3"> "</textarea>
 
                 <button type= "submit" class="btn" style="margin-top;15px">Étape suivante : Ajouter des questions</button>
             </form>
