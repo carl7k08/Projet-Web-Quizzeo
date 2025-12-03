@@ -19,7 +19,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'utilisateur') {
     <header>
         <div class="logo">Q<span>UIZZE</span><span class='last'>O</span> Utilisateur</div>
         <div>
-            <a href="profile.php" class='btn' style='background-color: var(--color-accent);'>Mon Profil</a>
+            <a href="profile.php" class='btn' style='background-color: var(--color-primary);'>Mon Profil</a>
             <a href='logout.php' class='btn' style="background-color: #333;">Déconnexion</a>
         </div>
     </header>
