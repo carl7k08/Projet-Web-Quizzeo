@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt = $pdo->prepare("INSERT INTO quizzes (user_id, titre, description, status) VALUES (?, ?, ?, 'en_cours')");
     $stmt->execute([$user_id, $titre, $description]);
-    $quiz_id = $pdo->lastInsertId();
+    $quiz_id = $pdo->lastInsertId();   
 
     header("Location: edit_quiz.php?id=" . $quiz_id);
     exit(); 
