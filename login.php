@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <header>
         <div class="logo">Q<span>UIZZE</span><span class="last">O</span></div>
-        <a href="register.php" class="link-primary">Créer un compte</a>
+        <a href="register.php" class="btn">Créer un compte</a>
     </header>
 
     <div class="container">

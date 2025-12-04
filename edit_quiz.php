@@ -1,5 +1,4 @@
 <?php
-
 require 'config/database.php';
 
 if (!isset($_GET['id'])) { header("Location: dashboard_client.php"); exit(); }
@@ -75,12 +74,11 @@ $questions = $questions->fetchAll();
                 <?php if($q['type'] == 'qcm'): 
                     $stmt_a = $pdo->prepare("SELECT * FROM answers WHERE question_id = ?");
                     $stmt_a->execute([$q['id']]);
-                    foreach($stmt_a->fetchAll() as $a): ?>
-                        <div class="text-small" style="margin-left:10px;">
+                    foreach($stmt_a->fetchAll() as $a): 
+                        $style = ($a['is_correct'] && $user_role == 'ecole') ? 'color:#388E3C; font-weight:bold;' : '';
+                ?>
+                        <div class="text-small" style="margin-left:10px; <?= $style ?>">
                             - <?= htmlspecialchars($a['answer_text']) ?>
-                            <?php if($a['is_correct'] && $user_role == 'ecole'): ?>
-                                <strong class="text-success">(Correct)</strong>
-                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>

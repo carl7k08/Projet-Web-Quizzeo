@@ -89,7 +89,7 @@ $questions = $stmt_q->fetchAll();
                 <div class="stat-box">
                     <h4><?= htmlspecialchars($q['question_text']) ?></h4>
                     <ul>
-                        <?php foreach($stats as $s):
+                        <?php foreach($stats as $s): 
                             $percent = count($attempts) > 0 ? round(($s['count'] / count($attempts)) * 100) : 0;
                         ?>
                         <li>

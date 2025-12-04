@@ -69,7 +69,7 @@ $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u 
             </div>
             <div class="stat-card" style="background: var(--color-accent); color: #333;">
                 <div class="stat-number"><?= $stats['attempts'] ?></div>
-                <div>Parties Jouées</div>
+                <div>Quizs répondus</div>
             </div>
         </div>
 
@@ -83,7 +83,7 @@ $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u 
                     <th>Email</th>
                     <th>Rôle</th>
                     <th>État</th>
-                    <th>Actions (Super-Admin)</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -115,7 +115,7 @@ $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u 
 
         <br><br>
 
-        <h2>Gestion des Quiz (Modération)</h2>
+        <h2>Gestion des Quizs</h2>
         <table>
             <thead>
                 <tr>

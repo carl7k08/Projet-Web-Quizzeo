@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <header>
         <div class="logo">Q<span>UIZZE</span><span class="last">O</span></div>
-        <a href="login.php" class="link-primary">Se connecter</a>
+        <a href="login.php" class="btn">Se connecter</a>
     </header>
 
     <div class="container">

@@ -25,7 +25,7 @@ $quizzes = $stmt->fetchAll();
     <div class="container">
         <div class="flex-header">
             <h2>Mes Quiz</h2>
-            <a href="create_quiz.php" class="btn"> + Créer un nouveau Quiz</a>
+            <a href="create_quiz.php" class="btn-align"> + Créer un nouveau Quiz</a>
         </div>
         <hr>
 
