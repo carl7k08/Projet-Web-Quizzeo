@@ -1,12 +1,11 @@
 <?php
-// dashboard_admin.php
-require 'config/db.php';
+
+require 'config/database.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php"); exit();
 }
 
-// ACTION : Activer/Désactiver Utilisateur
 if (isset($_GET['action_user']) && isset($_GET['id'])) {
     $id = intval($_GET['id']);
     $new_status = ($_GET['action_user'] == 'activate') ? 1 : 0;
@@ -15,7 +14,6 @@ if (isset($_GET['action_user']) && isset($_GET['id'])) {
     header("Location: dashboard_admin.php"); exit();
 }
 
-// ACTION : Activer/Désactiver Quiz (NOUVEAU)
 if (isset($_GET['action_quiz']) && isset($_GET['id'])) {
     $id = intval($_GET['id']);
     $new_status = ($_GET['action_quiz'] == 'activate') ? 1 : 0;
@@ -24,7 +22,6 @@ if (isset($_GET['action_quiz']) && isset($_GET['id'])) {
     header("Location: dashboard_admin.php"); exit();
 }
 
-// Récupération des données
 $users = $pdo->query("SELECT * FROM users WHERE role != 'admin' ORDER BY created_at DESC")->fetchAll();
 $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u ON q.user_id = u.id ORDER BY q.created_at DESC")->fetchAll();
 ?>
