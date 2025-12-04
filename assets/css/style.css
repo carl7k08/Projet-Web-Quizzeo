@@ -118,3 +118,31 @@ __
     margin-top: 15px;
     width: 100%;
 }
+
+.question-block {
+    margin-bottom: 20px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.answer-options {
+    margin-top: 10px;
+}
+
+.answer-option {
+    margin-bottom: 8px;
+}
+
+.answer-textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.btn-submit {
+    width: 100%;
+    margin-top: 10px;
+}
