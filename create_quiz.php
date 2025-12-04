@@ -30,21 +30,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <header>
+     <header>
         <div class="logo">Q<span>UIZZE</span><span class="last">O</span> Création</div>
         <a href="dashboard_client.php" class="btn">Retour</a>
     </header>
+    
     <div class="container">
-            <h2>Commencer un Nouveau Quiz</h2>
-            <form method="POST">
-                <label for=titre du Quiz:></label>
-                <input type="text" name="titre" placeholder="Ex: Examen de Mathémtiques" required>
+        <h2>Commencer un Nouveau Quiz</h2>
+        <form method="POST" class="quiz-form">
+            <div class="form-group">
+                <label for="titre">Titre du Quiz:</label>
+                <input type="text" id="titre" name="titre" placeholder="Ex: Examen de Mathématiques" required>
+            </div>
 
-                <label> Description: </label>
-                <textarea name="description" rows="4" style="width:100%; border:1px solid #ddd; padding:10px;" placeholder="Ex: Chapitre 1 à 3"> "</textarea>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="4" placeholder="Ex: Chapitre 1 à 3"></textarea>
+            </div>
 
-                <button type= "submit" class="btn" style="margin-top;15px">Étape suivante : Ajouter des questions</button>
-            </form>
+            <button type="submit" class="btn btn-submit">Étape suivante : Ajouter des questions</button>
+        </form>
     </div>
 </body>
 </html>
