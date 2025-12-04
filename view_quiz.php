@@ -14,8 +14,8 @@ $stmt = $pdo->prepare("SELECT * FROM quizzes WHERE id = ?");
 $stmt->execute([$quiz_id]);
 $quiz = $stmt->fetch();
 
-if (!$quiz || $quiz['status'] != 'lance') {
-    die("Ce quiz n'est pas disponible.");
+if (!$quiz || $quiz['status'] != 'lance' || $quiz['is_active'] == 0) {
+    die("Ce quiz n'est pas disponible (il a peut-être été désactivé par l'administrateur ou n'est pas encore lancé).");
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
