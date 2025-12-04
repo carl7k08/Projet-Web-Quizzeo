@@ -1,34 +1,25 @@
 <?php
-
+// edit_quiz.php
 require 'config/database.php';
-
-if (!isset($_GET['id'])) {
-    header("Location: dashboard_client.php");
-    exit();
-}
+// ... (Toute la logique PHP reste identique, je ne la remets pas pour raccourcir, mais garde-la !)
+if (!isset($_GET['id'])) { header("Location: dashboard_client.php"); exit(); }
 $quiz_id = intval($_GET['id']);
 $user_id = $_SESSION['user_id'];
-
 $stmt = $pdo->prepare("SELECT * FROM quizzes WHERE id = ? AND user_id = ?");
 $stmt->execute([$quiz_id, $user_id]);
 $quiz = $stmt->fetch();
-
-if (!$quiz) {
-    die("Ce quiz n'existe pas ou ne vous appartient pas.");
-}
+if (!$quiz) die("Erreur.");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_question'])) {
+    // ... (Ton code d'insertion ici) ...
     $question_text = htmlspecialchars($_POST['question_text']);
     $type = $_POST['type'];
     $points = intval($_POST['points']);
-
     $stmt = $pdo->prepare("INSERT INTO questions (quiz_id, question_text, type, points) VALUES (?, ?, ?, ?)");
     $stmt->execute([$quiz_id, $question_text, $type, $points]);
     $question_id = $pdo->lastInsertId();
-
     if ($type == 'qcm' && isset($_POST['answers'])) {
         $correct_index = intval($_POST['correct_answer']);
-        
         foreach ($_POST['answers'] as $index => $ans_text) {
             if (trim($ans_text) != "") {
                 $is_correct = ($index + 1 == $correct_index) ? 1 : 0;
@@ -37,33 +28,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_question'])) {
             }
         }
     }
-    header("Location: edit_quiz.php?id=" . $quiz_id);
-    exit();
+    header("Location: edit_quiz.php?id=" . $quiz_id); exit();
 }
-
 if (isset($_GET['publish']) && $_GET['publish'] == 'true') {
     $stmt = $pdo->prepare("UPDATE quizzes SET status = 'lance' WHERE id = ?");
     $stmt->execute([$quiz_id]);
-    header("Location: dashboard_client.php");
-    exit();
+    header("Location: dashboard_client.php"); exit();
 }
-
 $stmt_q = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id ASC");
 $stmt_q->execute([$quiz_id]);
 $questions = $stmt_q->fetchAll();
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Éditer le Quiz - Quizzeo</title>
+    <title>Éditer le Quiz</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        .question-box { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; border-left: 5px solid var(--color-primary); }
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 12px; color: white; background: #666; }
-        .qcm-options { display: none; background: #f9f9f9; padding: 15px; border: 1px dashed #ccc; margin-top: 10px; }
-    </style>
 </head>
 <body>
     <header>
@@ -72,27 +53,25 @@ $questions = $stmt_q->fetchAll();
     </header>
 
     <div class="container">
-        <h2><?= htmlspecialchars($quiz['titre']) ?> <span style="font-size:0.5em; color:gray;">(<?= $quiz['status'] ?>)</span></h2>
+        <h2><?= htmlspecialchars($quiz['titre']) ?> <span class="text-small">(<?= $quiz['status'] ?>)</span></h2>
         <p><?= htmlspecialchars($quiz['description']) ?></p>
-
         <hr>
 
         <h3>Questions du quiz (<?= count($questions) ?>)</h3>
         <?php foreach($questions as $q): ?>
             <div class="question-box">
-                <strong><?= htmlspecialchars($q['question_text']) ?></strong>
-                <br>
+                <strong><?= htmlspecialchars($q['question_text']) ?></strong><br>
                 <span class="badge"><?= strtoupper($q['type']) ?></span>
-                <span class="badge" style="background:var(--color-accent); color:#333;"><?= $q['points'] ?> pts</span>
+                <span class="badge badge-points"><?= $q['points'] ?> pts</span>
                 
-                <?php if($q['type'] == 'qcm'):
+                <?php if($q['type'] == 'qcm'): 
                     $stmt_a = $pdo->prepare("SELECT * FROM answers WHERE question_id = ?");
                     $stmt_a->execute([$q['id']]);
                     $answers = $stmt_a->fetchAll();
                 ?>
-                    <ul style="margin-top:5px; font-size:0.9em; color:#555;">
+                    <ul class="text-small">
                     <?php foreach($answers as $a): ?>
-                        <li <?= $a['is_correct'] ? 'style="color:green; font-weight:bold;"' : '' ?>>
+                        <li class="<?= $a['is_correct'] ? 'text-success text-bold' : '' ?>">
                             <?= htmlspecialchars($a['answer_text']) ?>
                         </li>
                     <?php endforeach; ?>
@@ -100,61 +79,51 @@ $questions = $stmt_q->fetchAll();
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
-
         <hr>
 
-        <h3 style="color:var(--color-primary);">Ajouter une question</h3>
-        <form method="POST" style="background:#f4f4f9; padding:20px; border-radius:8px;">
+        <h3 class="link-primary">Ajouter une question</h3>
+        <form method="POST" class="form-box">
             <input type="hidden" name="add_question" value="1">
-            
-            <label>Intitulé de la question :</label>
-            <input type="text" name="question_text" required placeholder="Ex: Quelle est la capitale de la France ?">
+            <label>Intitulé :</label>
+            <input type="text" name="question_text" required placeholder="Question...">
 
-            <div style="display:flex; gap:20px;">
-                <div style="flex:1;">
-                    <label>Type de question :</label>
+            <div class="flex-gap">
+                <div class="flex-1">
+                    <label>Type :</label>
                     <select name="type" id="typeSelect" onchange="toggleOptions()">
-                        <option value="qcm">QCM (Choix Multiples)</option>
-                        <option value="libre">Réponse Libre (Texte)</option>
+                        <option value="qcm">QCM</option>
+                        <option value="libre">Libre</option>
                     </select>
                 </div>
-                <div style="flex:1;">
+                <div class="flex-1">
                     <label>Points :</label>
                     <input type="number" name="points" value="1" min="1">
                 </div>
             </div>
 
-            <div id="qcmOptions" class="qcm-options" style="display:block;">
-                <p><strong>Propositions de réponses :</strong> (Cochez la bonne réponse)</p>
-                
+            <div id="qcmOptions" class="qcm-options">
+                <p><strong>Propositions :</strong> (Cochez la bonne réponse)</p>
                 <?php for($i=1; $i<=4; $i++): ?>
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;">
-                    <input type="radio" name="correct_answer" value="<?= $i ?>" <?= $i==1 ? 'checked' : '' ?> style="width:auto; margin:0;">
-                    <input type="text" name="answers[]" placeholder="Réponse <?= $i ?>" style="margin:0;">
+                <div class="radio-group">
+                    <input type="radio" name="correct_answer" value="<?= $i ?>" <?= $i==1 ? 'checked' : '' ?> class="radio-input">
+                    <input type="text" name="answers[]" placeholder="Réponse <?= $i ?>" class="text-input-simple">
                 </div>
                 <?php endfor; ?>
             </div>
 
-            <button type="submit" class="btn" style="width:100%; margin-top:15px;">Enregistrer la question</button>
+            <button type="submit" class="btn btn-full mt-20">Enregistrer la question</button>
         </form>
 
-        <br><br>
-        <div style="text-align:center;">
-            <a href="edit_quiz.php?id=<?= $quiz_id ?>&publish=true" class="btn" style="background-color:green; padding:15px 30px; font-size:1.2em;" onclick="return confirm('Attention, une fois lancé, vous ne pourrez plus modifier le quiz. Continuer ?')">
-                🚀 LANCER LE QUIZ (PUBLIER)
+        <div class="text-center mt-20">
+            <a href="edit_quiz.php?id=<?= $quiz_id ?>&publish=true" class="btn btn-success" onclick="return confirm('Confirmer ?')">
+                🚀 LANCER LE QUIZ
             </a>
         </div>
     </div>
-
     <script>
         function toggleOptions() {
             var type = document.getElementById('typeSelect').value;
-            var optionsDiv = document.getElementById('qcmOptions');
-            if (type === 'qcm') {
-                optionsDiv.style.display = 'block';
-            } else {
-                optionsDiv.style.display = 'none';
-            }
+            document.getElementById('qcmOptions').style.display = (type === 'qcm') ? 'block' : 'none';
         }
         toggleOptions();
     </script>

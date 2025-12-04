@@ -1,51 +1,41 @@
 <?php
+
 require 'config/database.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login.php');
-    exit();
+    header("Location: login.php"); exit();
 }
-
 
 if (isset($_GET['action']) && isset($_GET['id'])) {
     $id = intval($_GET['id']);
     $action = $_GET['action'];
-
-    if ($action == 'activate') $new_status = 1;
-    if ($action == 'deactivate') $new_status = 0;
-
-    $stmt = $pdo->prepare("UPDATE users SET is_active = ? WHERE id = ? and role != 'admin'");
+    $new_status = ($action == 'activate') ? 1 : 0;
+    $stmt = $pdo->prepare("UPDATE users SET is_active = ? WHERE id = ? AND role != 'admin'");
     $stmt->execute([$new_status, $id]);
-
-    header("Location: dashboard_admin.php");
-    exit();
+    header("Location: dashboard_admin.php"); exit();
 }
 
 $stmt = $pdo->query("SELECT * FROM users WHERE role != 'admin' ORDER BY created_at DESC");
 $users = $stmt->fetchAll();
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Quizzeo</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/style_dashboard_admin.css">
 </head>
 <body>
     <header>
-        <div class="logo">Q<span>UIZZE</span><span class='last'>O</span> Admin</div>
+        <div class="logo">Q<span>UIZZE</span><span class="last">O</span> Admin</div>
         <div>
-            <span>Bienvenue, <?= htmlspecialchars($_SESSION['nom']) ?></span>
-            <a href='logout.php' class='btn' style="background-color: #333; margin-left: 10px;">Se déconnecter</a>
+            <span>Bonjour, <?= htmlspecialchars($_SESSION['nom']) ?></span>
+            <a href="logout.php" class="btn btn-dark" style="margin-left: 10px;">Déconnexion</a>
         </div>
     </header>
 
-    <div class="container" style='max-width: 1000px;'>
-        <h2>Gestion des utilisateurs</h2>
-
+    <div class="container">
+        <h2>Gestion des Utilisateurs</h2>
         <table>
             <thead>
                 <tr>
@@ -64,16 +54,16 @@ $users = $stmt->fetchAll();
                     <td><?= ucfirst($u['role']) ?></td>
                     <td>
                         <?php if($u['is_active']): ?>
-                            <span class='status-on'>Actif</span>
+                            <span class="text-success text-bold">Actif</span>
                         <?php else: ?>
-                            <span class='status-off'>Désactivé</span>
+                            <span class="text-danger text-bold">Désactivé</span>
                         <?php endif; ?>
                     </td>
                     <td>
                         <?php if($u['is_active']): ?>
-                            <a href='?action=deactivate&id=<?= $u['id'] ?>' class='btn btn-small btn-danger'>Désactiver</a>
+                            <a href="?action=deactivate&id=<?= $u['id'] ?>" class="btn btn-small btn-danger">Désactiver</a>
                         <?php else: ?>
-                            <a href='?action=activate&id=<?= $u['id'] ?>' class='btn btn-small' style='background-color:green;'>Activer</a>
+                            <a href="?action=activate&id=<?= $u['id'] ?>" class="btn btn-small btn-success">Activer</a>
                         <?php endif; ?>
                     </td>
                 </tr>
