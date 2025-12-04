@@ -16,4 +16,7 @@ try {
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+define('RECAPTCHA_SITE_KEY', '6LfgLiEsAAAAABk5jpBum8hlhidwpwlXtBEZC4ZW'); 
+define('RECAPTCHA_SECRET_KEY', '6LfgLiEsAAAAAKZ4Sl5zfknHThq_jheFWS-jP6xC');
 ?>

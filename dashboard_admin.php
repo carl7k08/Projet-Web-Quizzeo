@@ -6,21 +6,37 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php"); exit();
 }
 
+if (isset($_GET['delete_user'])) {
+    $id = intval($_GET['delete_user']);
+    $pdo->prepare("DELETE FROM users WHERE id = ? AND role != 'admin'")->execute([$id]);
+    header("Location: dashboard_admin.php?msg=deleted"); exit();
+}
+
+if (isset($_GET['delete_quiz'])) {
+    $id = intval($_GET['delete_quiz']);
+    $pdo->prepare("DELETE FROM quizzes WHERE id = ?")->execute([$id]);
+    header("Location: dashboard_admin.php?msg=deleted"); exit();
+}
+
 if (isset($_GET['action_user']) && isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    $new_status = ($_GET['action_user'] == 'activate') ? 1 : 0;
-    $stmt = $pdo->prepare("UPDATE users SET is_active = ? WHERE id = ? AND role != 'admin'");
-    $stmt->execute([$new_status, $id]);
+    $status = ($_GET['action_user'] == 'activate') ? 1 : 0;
+    $pdo->prepare("UPDATE users SET is_active = ? WHERE id = ?")->execute([$status, $id]);
     header("Location: dashboard_admin.php"); exit();
 }
 
 if (isset($_GET['action_quiz']) && isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    $new_status = ($_GET['action_quiz'] == 'activate') ? 1 : 0;
-    $stmt = $pdo->prepare("UPDATE quizzes SET is_active = ? WHERE id = ?");
-    $stmt->execute([$new_status, $id]);
+    $status = ($_GET['action_quiz'] == 'activate') ? 1 : 0;
+    $pdo->prepare("UPDATE quizzes SET is_active = ? WHERE id = ?")->execute([$status, $id]);
     header("Location: dashboard_admin.php"); exit();
 }
+
+$stats = [
+    'users' => $pdo->query("SELECT COUNT(*) FROM users WHERE role != 'admin'")->fetchColumn(),
+    'quizzes' => $pdo->query("SELECT COUNT(*) FROM quizzes")->fetchColumn(),
+    'attempts' => $pdo->query("SELECT COUNT(*) FROM attempts")->fetchColumn()
+];
 
 $users = $pdo->query("SELECT * FROM users WHERE role != 'admin' ORDER BY created_at DESC")->fetchAll();
 $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u ON q.user_id = u.id ORDER BY q.created_at DESC")->fetchAll();
@@ -29,7 +45,7 @@ $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u 
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Quizzeo</title>
+    <title>Super Admin - Quizzeo</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -42,6 +58,23 @@ $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u 
     </header>
 
     <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number"><?= $stats['users'] ?></div>
+                <div>Utilisateurs Inscrits</div>
+            </div>
+            <div class="stat-card" style="background: var(--color-secondary);">
+                <div class="stat-number"><?= $stats['quizzes'] ?></div>
+                <div>Quiz Créés</div>
+            </div>
+            <div class="stat-card" style="background: var(--color-accent); color: #333;">
+                <div class="stat-number"><?= $stats['attempts'] ?></div>
+                <div>Parties Jouées</div>
+            </div>
+        </div>
+
+        <hr>
+
         <h2>Gestion des Utilisateurs</h2>
         <table>
             <thead>
@@ -49,8 +82,8 @@ $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u 
                     <th>Nom</th>
                     <th>Email</th>
                     <th>Rôle</th>
-                    <th>Statut</th>
-                    <th>Action</th>
+                    <th>État</th>
+                    <th>Actions (Super-Admin)</th>
                 </tr>
             </thead>
             <tbody>
@@ -60,35 +93,37 @@ $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u 
                     <td><?= htmlspecialchars($u['email']) ?></td>
                     <td><?= ucfirst($u['role']) ?></td>
                     <td>
-                        <?php if($u['is_active']): ?>
-                            <span class="text-success text-bold">Actif</span>
-                        <?php else: ?>
-                            <span class="text-danger text-bold">Bloqué</span>
-                        <?php endif; ?>
+                        <?= $u['is_active'] ? '<span class="text-success text-bold">Actif</span>' : '<span class="text-danger">Bloqué</span>' ?>
                     </td>
                     <td>
-                        <?php if($u['is_active']): ?>
-                            <a href="?action_user=deactivate&id=<?= $u['id'] ?>" class="btn btn-small btn-danger">Bloquer</a>
-                        <?php else: ?>
-                            <a href="?action_user=activate&id=<?= $u['id'] ?>" class="btn btn-small btn-success">Activer</a>
-                        <?php endif; ?>
+                        <div class="action-group">
+                            <?php if($u['is_active']): ?>
+                                <a href="?action_user=deactivate&id=<?= $u['id'] ?>" class="btn btn-small btn-dark" title="Bloquer">🔒</a>
+                            <?php else: ?>
+                                <a href="?action_user=activate&id=<?= $u['id'] ?>" class="btn btn-small btn-success" title="Activer">🔓</a>
+                            <?php endif; ?>
+
+                            <a href="admin_edit_user.php?id=<?= $u['id'] ?>" class="btn btn-small" title="Modifier">✏️</a>
+
+                            <a href="?delete_user=<?= $u['id'] ?>" class="btn btn-small btn-danger" onclick="return confirm('⚠️ SUPPRIMER DÉFINITIVEMENT cet utilisateur et TOUS ses quiz ?')" title="Supprimer">🗑️</a>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
 
-        <hr style="margin: 40px 0;">
+        <br><br>
 
-        <h2>Gestion des Quiz</h2>
+        <h2>Gestion des Quiz (Modération)</h2>
         <table>
             <thead>
                 <tr>
                     <th>Titre</th>
                     <th>Auteur</th>
+                    <th>Code PIN</th>
                     <th>État</th>
-                    <th>Visibilité</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -96,26 +131,20 @@ $quizzes = $pdo->query("SELECT q.*, u.nom as auteur FROM quizzes q JOIN users u 
                 <tr>
                     <td><?= htmlspecialchars($q['titre']) ?></td>
                     <td><?= htmlspecialchars($q['auteur']) ?></td>
+                    <td><strong><?= $q['access_code'] ?></strong></td>
                     <td>
-                        <?php 
-                            if($q['status'] == 'en_cours') echo '<span class="text-warning">Brouillon</span>';
-                            if($q['status'] == 'lance') echo '<span class="text-success text-bold">Lancé</span>';
-                            if($q['status'] == 'termine') echo '<span class="text-danger">Terminé</span>';
-                        ?>
+                        <?= $q['is_active'] ? '<span class="text-success">Visible</span>' : '<span class="text-danger text-bold">Masqué</span>' ?>
                     </td>
                     <td>
-                        <?php if($q['is_active']): ?>
-                            <span class="text-success">Visible</span>
-                        <?php else: ?>
-                            <span class="text-danger text-bold">Masqué (Admin)</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if($q['is_active']): ?>
-                            <a href="?action_quiz=deactivate&id=<?= $q['id'] ?>" class="btn btn-small btn-danger">Masquer</a>
-                        <?php else: ?>
-                            <a href="?action_quiz=activate&id=<?= $q['id'] ?>" class="btn btn-small btn-success">Rendre visible</a>
-                        <?php endif; ?>
+                        <div class="action-group">
+                            <?php if($q['is_active']): ?>
+                                <a href="?action_quiz=deactivate&id=<?= $q['id'] ?>" class="btn btn-small btn-dark">Masquer</a>
+                            <?php else: ?>
+                                <a href="?action_quiz=activate&id=<?= $q['id'] ?>" class="btn btn-small btn-success">Afficher</a>
+                            <?php endif; ?>
+                            
+                            <a href="?delete_quiz=<?= $q['id'] ?>" class="btn btn-small btn-danger" onclick="return confirm('Supprimer ce quiz définitivement ?')">🗑️</a>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>

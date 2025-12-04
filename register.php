@@ -2,17 +2,17 @@
 
 require 'config/database.php';
 
-if (!isset($_SESSION['captcha_result'])) {
-    $num1 = rand(1, 10);
-    $num2 = rand(1, 10);
-    $_SESSION['captcha_result'] = $num1 + $num2;
-    $_SESSION['captcha_text'] = "$num1 + $num2";
-}
-
 $message = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (intval($_POST['captcha']) !== $_SESSION['captcha_result']) {
-        $message = "Mauvais résultat au calcul (Captcha) !";
+    $recaptcha_response = $_POST['g-recaptcha-response'];
+    $remote_ip = $_SERVER['REMOTE_ADDR'];
+    $api_url = "https://www.google.com/recaptcha/api/siteverify?secret=" . RECAPTCHA_SECRET_KEY . "&response=$recaptcha_response&remoteip=$remote_ip";
+    $response = file_get_contents($api_url);
+    $response_keys = json_decode($response, true);
+
+    if(!$response_keys["success"]) {
+        $message = "Veuillez cocher la case 'Je ne suis pas un robot'.";
     } else {
         $nom = htmlspecialchars($_POST['nom']);
         $email = htmlspecialchars($_POST['email']);
@@ -27,7 +27,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             $stmt = $pdo->prepare("INSERT INTO users (nom, email, password, role) VALUES (?, ?, ?, ?)");
             if ($stmt->execute([$nom, $email, $password, $role])) {
-                unset($_SESSION['captcha_result']);
                 header("Location: login.php");
                 exit();
             } else {
@@ -35,11 +34,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     }
-    
-    $num1 = rand(1, 10);
-    $num2 = rand(1, 10);
-    $_SESSION['captcha_result'] = $num1 + $num2;
-    $_SESSION['captcha_text'] = "$num1 + $num2";
 }
 ?>
 <!DOCTYPE html>
@@ -48,6 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <title>Inscription - Quizzeo</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <header>
@@ -58,15 +53,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container">
         <h2>Créer un compte</h2>
         <?php if($message): ?>
-            <p class="text-danger"><?= $message ?></p>
+            <p class="text-danger text-bold"><?= $message ?></p>
         <?php endif; ?>
 
         <form method="POST">
             <label>Nom complet :</label>
-            <input type="text" name="nom" required>
+            <input type="text" name="nom" required placeholder="Votre nom">
 
             <label>Email :</label>
-            <input type="email" name="email" required>
+            <input type="email" name="email" required placeholder="votre@email.com">
 
             <label>Mot de passe :</label>
             <input type="password" name="password" required>
@@ -78,10 +73,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <option value="entreprise">Entreprise (Je veux faire des sondages)</option>
             </select>
 
-            <label>Vérification : Combien font <?= $_SESSION['captcha_text'] ?> ?</label>
-            <input type="number" name="captcha" required>
+            <div style="margin: 20px 0;">
+                <div class="g-recaptcha" data-sitekey="<?= RECAPTCHA_SITE_KEY ?>"></div>
+            </div>
 
-            <button type="submit" class="btn">M'inscrire</button>
+            <button type="submit" class="btn btn-full">M'inscrire</button>
         </form>
     </div>
 </body>

@@ -1,5 +1,4 @@
 <?php
-
 require 'config/database.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] != 'ecole' && $_SESSION['role'] != 'entreprise')) {
@@ -14,7 +13,7 @@ $quizzes = $stmt->fetchAll();
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Tableau de bord - Quizzeo</title>
+    <title>Tableau de bord</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -37,8 +36,8 @@ $quizzes = $stmt->fetchAll();
                 <thead>
                     <tr>
                         <th>Titre</th>
+                        <th>CODE PIN (Kahoot)</th>
                         <th>Statut</th>
-                        <th>Lien (à partager)</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -50,18 +49,20 @@ $quizzes = $stmt->fetchAll();
                             <small class="text-small"><?= count($pdo->query("SELECT id FROM questions WHERE quiz_id=".$q['id'])->fetchAll()) ?> questions</small>
                         </td>
                         <td>
-                            <?php 
-                                if($q['status'] == 'en_cours') echo '<span class="text-warning">Brouillon</span>';
-                                if($q['status'] == 'lance') echo '<span class="text-success text-bold">Lancé</span>';
-                                if($q['status'] == 'termine') echo '<span class="text-danger">Terminé</span>';
-                            ?>
+                            <?php if($q['status'] == 'lance'): ?>
+                                <span style="font-size: 1.5em; font-weight: bold; color: var(--color-primary); letter-spacing: 2px;">
+                                    <?= $q['access_code'] ?>
+                                </span>
+                             <?php else: ?>
+                                <span class="text-small">-</span>
+                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if($q['status'] == 'lance'): ?>
-                                <a href="view_quiz.php?id=<?= $q['id'] ?>" target="_blank" class="link-primary">Lien du quiz</a>
-                            <?php else: ?>
-                                -
-                            <?php endif; ?>
+                            <?php 
+                                if($q['status'] == 'en_cours') echo '<span class="text-warning">Brouillon</span>';
+                                if($q['status'] == 'lance') echo '<span class="text-success text-bold">LANCÉ</span>';
+                                if($q['status'] == 'termine') echo '<span class="text-danger">Terminé</span>';
+                            ?>
                         </td>
                         <td>
                             <?php if($q['status'] == 'en_cours'): ?>
